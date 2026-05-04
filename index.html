@@ -120,9 +120,9 @@ body{font-family:'Barlow',sans-serif;background:#080C12;color:#fff;overflow-x:hi
 .btn-outline:hover{border-color:var(--blue);color:var(--blue-light);background:rgba(26,107,255,.07);}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:300;height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(8,12,18,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+nav{position:fixed;top:0;left:0;right:0;z-index:300;height:90px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(8,12,18,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
 .nav-logo{display:flex;align-items:center;gap:.75rem;text-decoration:none;}
-.nav-logo img{height:54px;width:auto;}
+.nav-logo img{height:72px;width:auto;filter:brightness(1.1) contrast(1.05);}
 .nav-links{display:flex;align-items:center;gap:1.75rem;}
 .nav-links a{color:var(--steel);text-decoration:none;font-size:.88rem;font-weight:500;letter-spacing:.03em;transition:color .2s;}
 .nav-links a:hover{color:#fff;}
@@ -725,6 +725,37 @@ footer{background:#05080D;border-top:1px solid var(--border);padding:4rem 2rem 2
     </div>
   </div>
 </footer>
+
+<!-- ══ ARIA FLOATING WIDGET ══ -->
+<style>
+.aria-widget{position:fixed;bottom:2rem;right:2rem;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:.75rem;}
+.aria-bubble{background:var(--dark-card);border:1px solid var(--border-bright);padding:1.25rem 1.5rem;max-width:280px;position:relative;box-shadow:0 8px 40px rgba(26,107,255,.25);animation:slideUp .4s ease;}
+.aria-bubble::after{content:'';position:absolute;bottom:-8px;right:28px;width:16px;height:16px;background:var(--dark-card);border-right:1px solid var(--border-bright);border-bottom:1px solid var(--border-bright);transform:rotate(45deg);}
+.aria-bubble p{font-size:.88rem;color:var(--silver);line-height:1.6;margin-bottom:1rem;}
+.aria-bubble a{display:block;text-align:center;background:var(--blue);color:#fff;text-decoration:none;padding:.55rem 1rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;transition:background .2s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);}
+.aria-bubble a:hover{background:var(--blue-glow);}
+.aria-bubble-close{position:absolute;top:.5rem;right:.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1;}
+.aria-avatar{width:68px;height:68px;border-radius:50%;border:2px solid var(--blue);overflow:hidden;cursor:pointer;box-shadow:0 0 0 4px rgba(26,107,255,.15),0 4px 20px rgba(26,107,255,.3);transition:transform .25s,box-shadow .25s;background:var(--dark-card);}
+.aria-avatar:hover{transform:scale(1.08);box-shadow:0 0 0 6px rgba(26,107,255,.25),0 8px 30px rgba(26,107,255,.4);}
+.aria-avatar img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+.aria-status{position:absolute;bottom:2px;right:2px;width:14px;height:14px;background:#28c840;border-radius:50%;border:2px solid var(--dark);}
+.aria-avatar-wrap{position:relative;display:inline-block;}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+</style>
+
+<div class="aria-widget" id="ariaWidget">
+  <div class="aria-bubble" id="ariaBubble">
+    <button class="aria-bubble-close" onclick="document.getElementById('ariaBubble').style.display='none'">×</button>
+    <p>👋 Hi! I'm <strong>Aria</strong>, your AI Operations Chief.<br>Ready to activate your AI advantage?</p>
+    <a href="https://api.leadconnectorhq.com/widget/bookings/ai-receptionist-demo-injury-at">🗓 Book a Free Demo</a>
+  </div>
+  <div class="aria-avatar-wrap" onclick="var b=document.getElementById('ariaBubble');b.style.display=b.style.display==='none'?'block':'none'">
+    <div class="aria-avatar">
+      <img src="https://assets.cdn.filesafe.space/slDQoNubRK1Ptx8ae9Cu/media/69c331c839e3091d7c79951d.png" alt="Aria - AI Operations Chief">
+    </div>
+    <div class="aria-status"></div>
+  </div>
+</div>
 
 </body>
 </html>
