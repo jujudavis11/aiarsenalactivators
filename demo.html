@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ava — AI Receptionist Demo | AI Arsenal Activators</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #080C12;
+    --navy2: #0D1420;
+    --blue: #1A6BFF;
+    --blue-dim: rgba(26,107,255,0.12);
+    --silver: #A8B4C8;
+    --white: #F0F4FF;
+    --green: #00E5A0;
+    --red: #FF4560;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--navy); color: var(--white); font-family: 'Barlow', sans-serif; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(26,107,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(26,107,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px; pointer-events: none; z-index: 0;
+  }
+  .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 16px 80px; }
+
+  header { width: 100%; max-width: 960px; padding: 28px 0 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(26,107,255,0.2); margin-bottom: 40px; }
+  .logo { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+  .logo span { color: var(--blue); }
+  .live-badge { display: flex; align-items: center; gap: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse-dot 1.5s infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  .hero { text-align: center; max-width: 680px; margin-bottom: 44px; }
+  .hero-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; }
+  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(44px, 7vw, 72px); font-weight: 800; line-height: 0.95; text-transform: uppercase; margin-bottom: 16px; }
+  .hero h1 em { font-style: normal; color: var(--blue); }
+  .hero p { font-size: 16px; font-weight: 300; color: var(--silver); line-height: 1.6; }
+
+  .scenario-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; max-width: 700px; width: 100%; }
+  .scenario-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 18px; border-radius: 4px; border: 1px solid rgba(26,107,255,0.3); background: transparent; color: var(--silver); cursor: pointer; transition: all 0.2s; }
+  .scenario-btn:hover, .scenario-btn.active { border-color: var(--blue); color: var(--white); background: var(--blue-dim); }
+
+  .mode-toggle { display: flex; background: var(--navy2); border: 1px solid rgba(26,107,255,0.2); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 20px; }
+  .mode-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 28px; border-radius: 7px; border: none; background: transparent; color: var(--silver); cursor: pointer; transition: all 0.2s; }
+  .mode-btn.active { background: var(--blue); color: white; box-shadow: 0 0 20px rgba(26,107,255,0.3); }
+
+  .demo-wrap { width: 100%; max-width: 680px; }
+
+  /* VOICE */
+  .phone-panel { display: none; }
+  .phone-panel.visible { display: block; }
+  .phone-device { background: var(--navy2); border: 1px solid rgba(26,107,255,0.25); border-radius: 40px; overflow: hidden; box-shadow: 0 0 80px rgba(26,107,255,0.1), 0 40px 100px rgba(0,0,0,0.7); max-width: 340px; margin: 0 auto; }
+  .phone-top { background: #060A10; padding: 16px 20px 12px; display: flex; align-items: center; justify-content: center; }
+  .phone-speaker { width: 60px; height: 5px; border-radius: 3px; background: #1A2030; }
+  .phone-screen { padding: 28px 24px 20px; text-align: center; }
+  .caller-avatar { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, var(--blue) 0%, #0A4BD4 100%); display: flex; align-items: center; justify-content: center; font-size: 38px; margin: 0 auto 16px; position: relative; }
+  .caller-avatar .ring1, .caller-avatar .ring2 { position: absolute; border-radius: 50%; border: 1px solid rgba(26,107,255,0.3); }
+  .caller-avatar .ring1 { inset: -12px; animation: ring-out 2s infinite; }
+  .caller-avatar .ring2 { inset: -24px; animation: ring-out 2s infinite 0.4s; }
+  .caller-avatar.listening .ring1,.caller-avatar.listening .ring2 { border-color: var(--green); animation: ring-listen 0.8s infinite; }
+  .caller-avatar.speaking .ring1,.caller-avatar.speaking .ring2 { border-color: var(--blue); animation: ring-speak 0.6s infinite; }
+  @keyframes ring-out { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:0;transform:scale(1.15)} }
+  @keyframes ring-listen { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:0.2;transform:scale(1.2)} }
+  @keyframes ring-speak { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.25)} }
+  .caller-name { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .caller-status { font-size: 14px; color: var(--silver); margin-bottom: 8px; min-height: 20px; }
+  .call-timer { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; color: var(--green); letter-spacing: 0.1em; min-height: 24px; }
+  .call-transcript { margin: 16px 0; background: rgba(0,0,0,0.3); border-radius: 12px; max-height: 180px; overflow-y: auto; padding: 12px; text-align: left; }
+  .call-transcript::-webkit-scrollbar { width: 3px; }
+  .call-transcript::-webkit-scrollbar-thumb { background: rgba(26,107,255,0.3); border-radius: 2px; }
+  .transcript-line { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+  .transcript-line.ava { color: #7EB8FF; }
+  .transcript-line.user { color: var(--silver); }
+  .transcript-line span { font-weight: 600; margin-right: 6px; }
+  .transcript-empty { color: rgba(168,180,200,0.3); font-size: 13px; text-align: center; padding: 12px 0; }
+  .call-controls { padding: 20px 24px 32px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .main-call-btn { width: 80px; height: 80px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 32px; transition: all 0.3s; }
+  .main-call-btn.call { background: var(--green); box-shadow: 0 0 30px rgba(0,229,160,0.4); }
+  .main-call-btn.call:hover { transform: scale(1.08); box-shadow: 0 0 50px rgba(0,229,160,0.6); }
+  .main-call-btn.end { background: var(--red); box-shadow: 0 0 30px rgba(255,69,96,0.4); }
+  .main-call-btn.mic-active { background: var(--green); animation: mic-pulse 1s infinite; }
+  @keyframes mic-pulse { 0%,100%{box-shadow:0 0 20px rgba(0,229,160,0.4)} 50%{box-shadow:0 0 50px rgba(0,229,160,0.8)} }
+  .call-hint { font-size: 13px; color: var(--silver); text-align: center; min-height: 18px; }
+  .ctrl-row { display: flex; gap: 20px; }
+  .ctrl-btn { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.2s; color: var(--silver); }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.12); }
+  .ctrl-btn.muted { background: rgba(255,69,96,0.15); border-color: rgba(255,69,96,0.3); color: var(--red); }
+  .chrome-note { font-size: 12px; color: rgba(168,180,200,0.4); text-align: center; }
+
+  /* CHAT */
+  .chat-panel { display: none; }
+  .chat-panel.visible { display: block; }
+  .chat-device { background: var(--navy2); border: 1px solid rgba(26,107,255,0.25); border-radius: 20px; overflow: hidden; box-shadow: 0 0 60px rgba(26,107,255,0.1), 0 24px 80px rgba(0,0,0,0.6); }
+  .chat-header { background: linear-gradient(135deg, #0D1A2E 0%, #0A1220 100%); padding: 18px 22px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(26,107,255,0.2); }
+  .chat-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; position: relative; }
+  .chat-avatar::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1px solid rgba(26,107,255,0.2); animation:ring-out 2s infinite; }
+  .chat-info { flex: 1; }
+  .chat-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .chat-sub { font-size: 12px; color: var(--silver); margin-top: 1px; }
+  .online-chip { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--green); }
+  .chat-area { height: 380px; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-thumb { background: rgba(26,107,255,0.3); border-radius: 2px; }
+  .msg { display: flex; gap: 8px; animation: fadeUp 0.3s ease; max-width: 85%; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .msg.ava { align-self: flex-start; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+  .msg.ava .msg-av { background: linear-gradient(135deg, var(--blue) 0%, #0A4BD4 100%); }
+  .msg.user .msg-av { background: rgba(168,180,200,0.15); }
+  .bubble { padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.55; }
+  .msg.ava .bubble { background: rgba(26,107,255,0.12); border: 1px solid rgba(26,107,255,0.2); border-top-left-radius: 4px; }
+  .msg.user .bubble { background: rgba(168,180,200,0.1); border: 1px solid rgba(168,180,200,0.15); color: var(--silver); border-top-right-radius: 4px; }
+  .typing-bubble { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
+  .td { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); animation: bounce 1.2s infinite; }
+  .td:nth-child(2){animation-delay:0.2s} .td:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-6px);opacity:1} }
+  .quick-replies { padding: 0 18px 12px; display: flex; gap: 7px; flex-wrap: wrap; }
+  .qr-btn { font-size: 12px; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(26,107,255,0.25); background: transparent; color: var(--silver); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .qr-btn:hover { border-color: var(--blue); color: var(--white); background: var(--blue-dim); }
+  .input-area { padding: 14px 18px; border-top: 1px solid rgba(26,107,255,0.15); display: flex; gap: 8px; align-items: flex-end; background: rgba(8,12,18,0.5); }
+  .input-area textarea { flex: 1; background: rgba(26,107,255,0.07); border: 1px solid rgba(26,107,255,0.2); border-radius: 12px; padding: 11px 14px; color: var(--white); font-family: 'Barlow', sans-serif; font-size: 14px; resize: none; outline: none; min-height: 46px; max-height: 120px; line-height: 1.5; transition: border-color 0.2s; }
+  .input-area textarea:focus { border-color: rgba(26,107,255,0.5); }
+  .input-area textarea::placeholder { color: rgba(168,180,200,0.4); }
+  .send-btn { width: 46px; height: 46px; border-radius: 12px; background: var(--blue); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .send-btn:hover { background: #2577FF; box-shadow: 0 0 20px rgba(26,107,255,0.4); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+  .reset-row { display: flex; justify-content: center; margin-top: 16px; }
+  .reset-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--silver); background: transparent; border: 1px solid rgba(168,180,200,0.2); padding: 7px 18px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .reset-btn:hover { color: var(--white); border-color: rgba(168,180,200,0.4); }
+
+  .cta-section { margin-top: 56px; text-align: center; max-width: 580px; width: 100%; padding: 40px 36px; background: rgba(26,107,255,0.06); border: 1px solid rgba(26,107,255,0.2); border-radius: 16px; }
+  .cta-section h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; }
+  .cta-section p { color: var(--silver); font-size: 15px; font-weight: 300; margin-bottom: 26px; line-height: 1.6; }
+  .cta-btn { display: inline-block; background: var(--blue); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 15px 34px; border-radius: 6px; text-decoration: none; transition: all 0.2s; }
+  .cta-btn:hover { background: #2577FF; box-shadow: 0 0 30px rgba(26,107,255,0.4); transform: translateY(-1px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="logo">AI <span>Arsenal</span> Activators</div>
+    <div class="live-badge"><div class="live-dot"></div>Live — Powered by Claude AI</div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Interactive Demo</div>
+    <h1>Meet <em>Ava</em><br/>Your AI Receptionist</h1>
+    <p>This is real AI — not a recording. Call or chat with Ava exactly like a client would. See what your business could do 24/7.</p>
+  </div>
+
+  <div class="scenario-bar">
+    <button class="scenario-btn active" onclick="setScenario('pi')">⚖️ Personal Injury Law</button>
+    <button class="scenario-btn" onclick="setScenario('chiro')">🩺 Chiropractic Office</button>
+    <button class="scenario-btn" onclick="setScenario('general')">🏢 Service Business</button>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="voice-tab" onclick="setMode('voice')">📞 Voice Call</button>
+    <button class="mode-btn" id="chat-tab" onclick="setMode('chat')">💬 Text Chat</button>
+  </div>
+
+  <div class="demo-wrap">
+    <!-- VOICE -->
+    <div class="phone-panel visible" id="voice-panel">
+      <div class="phone-device">
+        <div class="phone-top"><div class="phone-speaker"></div></div>
+        <div class="phone-screen">
+          <div class="caller-avatar" id="caller-avatar">🤖<div class="ring1"></div><div class="ring2"></div></div>
+          <div class="caller-name" id="caller-name">Ava</div>
+          <div class="caller-status" id="caller-status">AI Receptionist · 24/7</div>
+          <div class="call-timer" id="call-timer"></div>
+          <div class="call-transcript" id="call-transcript"><div class="transcript-empty">Tap the call button to start...</div></div>
+        </div>
+        <div class="call-controls">
+          <div class="call-hint" id="call-hint">Tap to call Ava</div>
+          <button class="main-call-btn call" id="call-btn" onclick="toggleCall()">📞</button>
+          <div class="ctrl-row">
+            <button class="ctrl-btn" id="mute-btn" onclick="toggleMute()" title="Mute">🎙️</button>
+            <button class="ctrl-btn" onclick="resetVoice()" title="Reset">↺</button>
+            <button class="ctrl-btn" onclick="" title="Speaker">🔊</button>
+          </div>
+          <div class="chrome-note">🔔 Best in Chrome or Edge · Mic required</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-device">
+        <div class="chat-header">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-info">
+            <div class="chat-name" id="chat-name">Ava — Premier Injury Law</div>
+            <div class="chat-sub">AI Receptionist · Powered by Claude AI</div>
+          </div>
+          <div class="online-chip">Online</div>
+        </div>
+        <div class="chat-area" id="chat-area"></div>
+        <div class="quick-replies" id="quick-replies"></div>
+        <div class="input-area">
+          <textarea id="user-input" placeholder="Type your message..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendChatMessage()">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="reset-row"><button class="reset-btn" onclick="initChat()">↺ Reset Chat</button></div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <h2>Want This<br/>In Your Business?</h2>
+    <p>We build and install a custom AI receptionist for your firm or practice in 2 weeks. Setup from $1,500 + $497/month. No missed calls. No lost leads. Ever.</p>
+    <a class="cta-btn" href="https://aiarsenalactivators.com" target="_blank">Book a Strategy Call →</a>
+  </div>
+</div>
+
+<script>
+const scenarios = {
+  pi: {
+    voiceName: "Ava", chatName: "Ava — Premier Injury Law",
+    system: `You are Ava, the AI receptionist for Premier Injury Law, a personal injury law firm. You are warm, professional, and empathetic. Your goals: 1) Greet callers warmly and make them feel heard. 2) Understand their situation (car accident, slip and fall, workplace injury, etc.). 3) Qualify by asking: when did it happen, did they seek medical treatment, do they have insurance info. 4) Book a FREE consultation or get their contact info. 5) Reassure: NO upfront fees — the firm works on contingency (no win, no fee). Keep responses to 2-3 sentences. Be empathetic when someone is injured. Never give legal advice.`,
+    quickReplies: [
+      {label:'🚗 Car accident', text:'I was in a car accident'},
+      {label:'📅 Book consult', text:'I need to schedule a consultation'},
+      {label:'💰 Fees?', text:'What are your fees?'},
+      {label:'⚠️ Slip and fall', text:'I slipped and fell at a store'}
+    ]
+  },
+  chiro: {
+    voiceName: "Ally", chatName: "Ally — Southside Chiropractic",
+    system: `You are Ally, the AI receptionist for Southside Chiropractic. You are warm, caring, and efficient. Your goals: 1) Greet patients warmly. 2) Understand their issue (back pain, neck pain, accident injury, general wellness). 3) Check if new or returning patient. 4) Book an appointment — ask preferred day/time. 5) Explain what to expect: 15-min intake, X-rays if needed, adjustment. Keep responses to 2-3 sentences. Be warm and reassuring. Never give medical advice.`,
+    quickReplies: [
+      {label:'🦴 Back pain', text:'I have really bad back pain'},
+      {label:'📅 Book appointment', text:'I need to book an appointment'},
+      {label:'🚗 Accident injury', text:'I was in a car accident and my neck hurts'},
+      {label:'💳 Insurance?', text:'Do you accept insurance?'}
+    ]
+  },
+  general: {
+    voiceName: "Aria", chatName: "Aria — AI Arsenal Activators",
+    system: `You are Aria, the AI receptionist for AI Arsenal Activators, an AI automation agency. You are sharp, confident, and results-focused. Your goals: 1) Greet visitors warmly. 2) Explain services: AI voice receptionists, GoHighLevel automation, Answer Engine Optimization (AEO), AI workflows powered by Claude AI and Claude Code. 3) Qualify: business type, biggest pain point, current systems. 4) Book a strategy call or capture contact info. Keep responses to 2-3 sentences. Be direct. Setup starts at $1,500.`,
+    quickReplies: [
+      {label:'🤖 Services?', text:'What services do you offer?'},
+      {label:'📞 AI receptionist', text:'Tell me about your AI receptionist'},
+      {label:'💰 Pricing', text:'What does it cost?'},
+      {label:'📅 Book call', text:'I want to book a strategy call'}
+    ]
+  }
+};
+
+let currentScenario = 'pi';
+let currentMode = 'voice';
+
+// ===== API — calls /api/chat (Vercel serverless, key stays hidden) =====
+async function askClaude(messages) {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, system: scenarios[currentScenario].system })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.text;
+}
+
+function setScenario(key) {
+  currentScenario = key;
+  document.querySelectorAll('.scenario-btn').forEach((b,i) => b.classList.toggle('active', ['pi','chiro','general'][i] === key));
+  document.getElementById('caller-name').textContent = scenarios[key].voiceName;
+  document.getElementById('chat-name').textContent = scenarios[key].chatName;
+  buildQuickReplies(key);
+  if (callActive) endCall();
+  resetVoice();
+  initChat();
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('voice-tab').classList.toggle('active', mode === 'voice');
+  document.getElementById('chat-tab').classList.toggle('active', mode === 'chat');
+  document.getElementById('voice-panel').classList.toggle('visible', mode === 'voice');
+  document.getElementById('chat-panel').classList.toggle('visible', mode === 'chat');
+}
+
+function buildQuickReplies(key) {
+  document.getElementById('quick-replies').innerHTML = scenarios[key].quickReplies.map(r =>
+    `<button class="qr-btn" onclick="sendQuick('${r.text.replace(/'/g,"\\'")}')">${r.label}</button>`
+  ).join('');
+}
+
+// ===== VOICE =====
+let callActive=false, callMessages=[], callTimer=null, callSeconds=0;
+let recognition=null, isMuted=false, isSpeaking=false;
+const synth = window.speechSynthesis;
+
+function toggleCall() { callActive ? endCall() : startCall(); }
+
+async function startCall() {
+  if (!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)) {
+    alert('Voice calls require Chrome or Edge. Please use Text Chat or switch browsers!'); return;
+  }
+  callActive=true; callMessages=[];
+  document.getElementById('call-btn').className='main-call-btn end';
+  document.getElementById('call-btn').textContent='📵';
+  document.getElementById('call-hint').textContent='Connecting...';
+  document.getElementById('caller-status').textContent='Calling...';
+  document.getElementById('call-transcript').innerHTML='';
+  callSeconds=0;
+  callTimer=setInterval(()=>{
+    callSeconds++;
+    const m=Math.floor(callSeconds/60).toString().padStart(2,'0');
+    const s=(callSeconds%60).toString().padStart(2,'0');
+    document.getElementById('call-timer').textContent=m+':'+s;
+  },1000);
+  try {
+    const greeting=await askClaude([{role:'user',content:'Hello'}]);
+    callMessages.push({role:'user',content:'Hello'},{role:'assistant',content:greeting});
+    addTranscriptLine('ava',greeting);
+    await speakText(greeting);
+    if(callActive) startListening();
+  } catch(e) { document.getElementById('caller-status').textContent='Connection error — check API key'; }
+}
+
+function endCall() {
+  callActive=false;
+  if(recognition){try{recognition.stop();}catch(e){} recognition=null;}
+  if(synth) synth.cancel();
+  if(callTimer){clearInterval(callTimer);callTimer=null;}
+  document.getElementById('call-btn').className='main-call-btn call';
+  document.getElementById('call-btn').textContent='📞';
+  document.getElementById('call-hint').textContent='Tap to call again';
+  document.getElementById('caller-status').textContent='Call ended';
+  document.getElementById('call-timer').textContent='';
+  document.getElementById('caller-avatar').className='caller-avatar';
+  isSpeaking=false;
+}
+
+function resetVoice() {
+  endCall();
+  callMessages=[];
+  document.getElementById('call-transcript').innerHTML='<div class="transcript-empty">Tap the call button to start...</div>';
+  document.getElementById('call-timer').textContent='';
+  document.getElementById('caller-status').textContent='AI Receptionist · 24/7';
+  document.getElementById('call-hint').textContent='Tap to call Ava';
+}
+
+function speakText(text) {
+  return new Promise(resolve=>{
+    if(!synth){resolve();return;}
+    synth.cancel();
+    const utt=new SpeechSynthesisUtterance(text);
+    utt.rate=1.05; utt.pitch=1.05; utt.volume=1;
+    const voices=synth.getVoices();
+    const preferred=voices.find(v=>v.lang.startsWith('en-')&&v.name.toLowerCase().includes('female'))
+      ||voices.find(v=>v.lang.startsWith('en'));
+    if(preferred) utt.voice=preferred;
+    isSpeaking=true;
+    document.getElementById('caller-avatar').className='caller-avatar speaking';
+    document.getElementById('caller-status').textContent='Ava is speaking...';
+    utt.onend=()=>{
+      isSpeaking=false;
+      if(callActive){document.getElementById('caller-avatar').className='caller-avatar';document.getElementById('caller-status').textContent='Your turn — speak now';}
+      resolve();
+    };
+    utt.onerror=()=>{isSpeaking=false;resolve();};
+    synth.speak(utt);
+  });
+}
+
+function startListening() {
+  if(!callActive||isSpeaking) return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) return;
+  recognition=new SR();
+  recognition.lang='en-US'; recognition.continuous=false; recognition.interimResults=false;
+  document.getElementById('call-btn').className='main-call-btn mic-active';
+  document.getElementById('call-btn').textContent='🎙️';
+  document.getElementById('call-hint').textContent=isMuted?'Muted':'Listening... speak now';
+  document.getElementById('caller-avatar').className='caller-avatar listening';
+  document.getElementById('caller-status').textContent='Listening...';
+  recognition.onresult=async e=>{
+    const text=e.results[0][0].transcript;
+    if(!callActive) return;
+    addTranscriptLine('user',text);
+    document.getElementById('caller-status').textContent='Ava is thinking...';
+    document.getElementById('caller-avatar').className='caller-avatar';
+    document.getElementById('call-btn').className='main-call-btn end';
+    document.getElementById('call-btn').textContent='📵';
+    callMessages.push({role:'user',content:text});
+    try {
+      const reply=await askClaude(callMessages);
+      callMessages.push({role:'assistant',content:reply});
+      addTranscriptLine('ava',reply);
+      await speakText(reply);
+      if(callActive) startListening();
+    } catch(e){if(callActive) startListening();}
+  };
+  recognition.onerror=e=>{
+    if(e.error==='no-speech'&&callActive) setTimeout(()=>{if(callActive)startListening();},500);
+  };
+  if(!isMuted) recognition.start();
+}
+
+function toggleMute() {
+  isMuted=!isMuted;
+  const btn=document.getElementById('mute-btn');
+  btn.classList.toggle('muted',isMuted);
+  btn.textContent=isMuted?'🔇':'🎙️';
+  if(isMuted&&recognition){try{recognition.stop();}catch(e){}}
+  else if(!isMuted&&callActive&&!isSpeaking) startListening();
+}
+
+function addTranscriptLine(role,text) {
+  const t=document.getElementById('call-transcript');
+  const empty=t.querySelector('.transcript-empty');
+  if(empty) empty.remove();
+  const div=document.createElement('div');
+  div.className=`transcript-line ${role}`;
+  div.innerHTML=`<span>${role==='ava'?scenarios[currentScenario].voiceName:'You'}:</span>${text}`;
+  t.appendChild(div); t.scrollTop=t.scrollHeight;
+}
+
+// ===== CHAT =====
+let chatMessages=[], chatBusy=false;
+
+function addChatMsg(role,text) {
+  const chat=document.getElementById('chat-area');
+  const div=document.createElement('div');
+  div.className=`msg ${role==='assistant'?'ava':'user'}`;
+  div.innerHTML=`<div class="msg-av">${role==='assistant'?'🤖':'👤'}</div><div class="bubble">${text}</div>`;
+  chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+}
+
+function showTyping() {
+  const chat=document.getElementById('chat-area');
+  const div=document.createElement('div');
+  div.className='msg ava'; div.id='typing-ind';
+  div.innerHTML=`<div class="msg-av">🤖</div><div class="bubble"><div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+}
+
+function removeTyping(){const t=document.getElementById('typing-ind');if(t)t.remove();}
+
+async function sendChatMessage() {
+  const input=document.getElementById('user-input');
+  const text=input.value.trim();
+  if(!text||chatBusy) return;
+  input.value=''; input.style.height='auto';
+  addChatMsg('user',text);
+  chatBusy=true; document.getElementById('send-btn').disabled=true;
+  showTyping();
+  chatMessages.push({role:'user',content:text});
+  try {
+    const reply=await askClaude(chatMessages);
+    chatMessages.push({role:'assistant',content:reply});
+    removeTyping(); addChatMsg('assistant',reply);
+  } catch(e){removeTyping();addChatMsg('assistant',"I had a brief issue — please try again!");}
+  chatBusy=false; document.getElementById('send-btn').disabled=false;
+}
+
+function sendQuick(text){document.getElementById('user-input').value=text;sendChatMessage();}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+async function initChat() {
+  chatMessages=[];
+  document.getElementById('chat-area').innerHTML='';
+  chatBusy=true; document.getElementById('send-btn').disabled=true;
+  showTyping();
+  try {
+    const reply=await askClaude([{role:'user',content:'Hello'}]);
+    chatMessages.push({role:'user',content:'Hello'},{role:'assistant',content:reply});
+    removeTyping(); addChatMsg('assistant',reply);
+  } catch(e){removeTyping();addChatMsg('assistant',"Hello! How can I help you today?");}
+  chatBusy=false; document.getElementById('send-btn').disabled=false;
+}
+
+if(synth){synth.onvoiceschanged=()=>synth.getVoices();synth.getVoices();}
+buildQuickReplies(currentScenario);
+initChat();
+</script>
+</body>
+</html>
